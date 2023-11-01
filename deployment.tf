@@ -1,25 +1,25 @@
 #Create a Kubernetes service account called 'ping-sa' that is linked to the 'ping-role' IAM role & a Kubernetes deployment that is associated with the 'ping-sa' service account
-resource "kubectl_manifest" "ping_deployment" {
-  depends_on = [module.eks, kubectl_manifest.ping-sa]
+resource "kubectl_manifest" "test_deployment" {
+  depends_on = [module.eks, kubectl_manifest.secrets-sa]
 
   yaml_body = <<YAML
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ping-deployment
+  name: test-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ping
+      app: test-app
   template:
     metadata:
       labels:
-        app: ping
+        app: test-app
     spec:
       containers:
-      - image: nginx:1.21
-        name: ping
+      - image: nginx
+        name: test-app
         volumeMounts:
         - name: secret-volume
           mountPath: "/var/run/secrets/ping-secret"
@@ -29,7 +29,7 @@ spec:
             secretKeyRef:
               name: databasepassword 
               key: password
-      serviceAccountName: ping-sa
+      serviceAccountName: secrets-sa
       volumes:
       - name: secret-volume
         csi:
@@ -41,44 +41,18 @@ spec:
 YAML
 }
 
-resource "kubectl_manifest" "ping-sa" {
+resource "kubectl_manifest" "secrets-sa" {
   depends_on = [module.eks]
 
   yaml_body = <<YAML
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ping-sa
+  name: secrets-sa
   annotations:
-    eks.amazonaws.com/role-arn: ${aws_iam_role.ping_role.arn}
+    eks.amazonaws.com/role-arn: ${aws_iam_role.secret_role.arn}
 automountServiceAccountToken: true
 secrets:
 - name: token
 YAML
 }
-
-# apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
-# kind: SecretProviderClass
-# metadata:
-#   name: nginx-deployment-aws-secrets
-# spec:
-#   provider: aws
-#   parameters:
-#     objects: |
-#         - objectName: "ping-secret-1234"
-#           objectType: "secretsmanager"
-# ---            
-# kind: Service
-# apiVersion: v1
-# metadata:
-#   name: nginx-deployment
-#   labels:
-#     app: nginx
-# spec:
-#   selector:
-#     app: nginx
-#   ports:
-#     - protocol: TCP
-#       port: 80
-#       targetPort: 80
-# ---  
