@@ -25,7 +25,7 @@ resource "aws_iam_role" "secret_role" {
 }
 
 resource "aws_iam_policy" "policy" {
-  name = "aws-secrets-manager-policy-marks-eks-cluster"
+  name = "aws-secrets-manager-policy-eks-cluster"
   description = "A test policy"
 
   policy = <<EOF

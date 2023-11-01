@@ -49,7 +49,7 @@ spec:
           key: password
   parameters:
     objects: |
-      - objectName: "arn:aws:secretsmanager:us-east-1:803253357612:secret:db-secret-pCgK81"
+      - objectName: "${aws_secretsmanager_secret.db_secret.arn}"
         jmesPath:
             - path: "password"
               objectAlias: "MySecretPassword"

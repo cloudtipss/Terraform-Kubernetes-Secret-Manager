@@ -1,6 +1,5 @@
-#Create a Kubernetes service account called 'ping-sa' that is linked to the 'ping-role' IAM role & a Kubernetes deployment that is associated with the 'ping-sa' service account
 resource "kubectl_manifest" "test_deployment" {
-  depends_on = [module.eks, kubectl_manifest.secrets-sa]
+  depends_on = [module.eks, kubectl_manifest.secrets-sa, aws_secretsmanager_secret.db_secret]
 
   yaml_body = <<YAML
 apiVersion: apps/v1
@@ -22,7 +21,7 @@ spec:
         name: test-app
         volumeMounts:
         - name: secret-volume
-          mountPath: "/var/run/secrets/ping-secret"
+          mountPath: "/var/run/secrets/db-secret"
         env:
         - name: DATABASE_PASSWORD
           valueFrom:
